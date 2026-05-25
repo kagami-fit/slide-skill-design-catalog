@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>スライドスキル デザインカタログ</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="header-inner">
+        <div>
+          <p class="eyebrow">Slide Skill Design Catalog</p>
+          <h1><span>スライドスキル</span> <span>デザインカタログ</span></h1>
+        </div>
+        <div class="summary-metrics" aria-label="掲載概要">
+          <div>
+            <strong id="skillCount">10</strong>
+            <span>skills</span>
+          </div>
+          <div>
+            <strong id="visualCount">0</strong>
+            <span>visuals</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="overview-band" aria-label="全体プレビュー">
+        <div class="overview-copy">
+          <h2>生成結果を一気に見比べる</h2>
+          <p>実生成画像とスタイル見本を、スキルごとに並べて確認できます。</p>
+        </div>
+        <button class="overview-preview" type="button" data-open-image="./assets/all-skills-expanded-contact-sheet.jpg" data-open-title="全スキルプレビュー比較">
+          <img src="./assets/all-skills-expanded-contact-sheet.jpg" alt="全スキルのプレビュー一覧">
+        </button>
+      </section>
+
+      <section class="toolbar" aria-label="絞り込み">
+        <label class="search-box">
+          <span>検索</span>
+          <input id="searchInput" type="search" placeholder="スキル名・用途・色で検索">
+        </label>
+        <div class="filter-group" id="filterGroup" aria-label="タグ">
+          <button class="filter-chip is-active" type="button" data-filter="all">すべて</button>
+        </div>
+      </section>
+
+      <section class="layout">
+        <aside class="sidebar" aria-label="スキル一覧">
+          <div class="sidebar-head">
+            <h2>一覧</h2>
+            <span id="resultCount"></span>
+          </div>
+          <div class="skill-list" id="skillList"></div>
+        </aside>
+
+        <section class="detail" aria-live="polite">
+          <div class="detail-head">
+            <div>
+              <p class="detail-kicker" id="detailSkill"></p>
+              <h2 id="detailTitle"></h2>
+              <p id="detailTone"></p>
+            </div>
+            <div class="palette" id="detailPalette" aria-label="カラーパレット"></div>
+          </div>
+
+          <div class="detail-grid">
+            <div class="main-preview">
+              <button class="image-button" type="button" id="mainImageButton">
+                <img id="mainImage" src="./assets/catalog/slide-qc-improvement-imagegen2/slides/slide_01.png" alt="QC改善型の表紙プレビュー">
+              </button>
+              <div class="thumb-row" id="thumbRow"></div>
+            </div>
+
+            <div class="spec-panel">
+              <dl>
+                <div>
+                  <dt>向いている用途</dt>
+                  <dd id="detailUseCase"></dd>
+                </div>
+                <div>
+                  <dt>見た目の特徴</dt>
+                  <dd id="detailFeatures"></dd>
+                </div>
+                <div>
+                  <dt>タグ</dt>
+                  <dd class="tag-line" id="detailTags"></dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+
+          <div class="compare-section">
+            <div class="section-title">
+              <h3>参照元と生成結果</h3>
+              <span id="compareNote"></span>
+            </div>
+            <div class="compare-grid" id="compareGrid"></div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <dialog class="lightbox" id="lightbox">
+      <button class="close-button" type="button" id="closeLightbox" aria-label="閉じる">×</button>
+      <figure>
+        <img id="lightboxImage" src="./assets/all-skills-expanded-contact-sheet.jpg" alt="全スキル生成比較">
+        <figcaption id="lightboxCaption"></figcaption>
+      </figure>
+    </dialog>
+
+    <script src="./data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
