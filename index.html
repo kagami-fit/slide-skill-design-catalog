@@ -67,10 +67,28 @@
           </div>
 
           <div class="detail-grid">
-            <div class="main-preview">
-              <button class="image-button" type="button" id="mainImageButton">
+            <div class="gallery-panel">
+              <div class="gallery-toolbar">
+                <div class="viewer-tabs" id="viewerTabs" aria-label="表示画像の切り替え">
+                  <button class="is-active" type="button" data-view-mode="slides">生成スライド</button>
+                  <button type="button" data-view-mode="reference">参照画像</button>
+                  <button type="button" data-view-mode="generated">生成一覧</button>
+                </div>
+                <div class="viewer-actions">
+                  <button class="nav-button" type="button" id="prevImage" aria-label="前の画像">‹</button>
+                  <span id="imageCounter"></span>
+                  <button class="nav-button" type="button" id="nextImage" aria-label="次の画像">›</button>
+                  <button class="zoom-button" type="button" id="openCurrentImage">拡大</button>
+                </div>
+              </div>
+
+              <button class="image-button gallery-stage" type="button" id="mainImageButton">
                 <img id="mainImage" src="./assets/catalog/slide-qc-improvement-imagegen2/slides/slide_01.png" alt="QC改善型の表紙プレビュー">
               </button>
+              <div class="gallery-meta">
+                <strong id="galleryTitle"></strong>
+                <span id="galleryHint"></span>
+              </div>
               <div class="thumb-row" id="thumbRow"></div>
             </div>
 

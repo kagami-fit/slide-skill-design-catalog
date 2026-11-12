@@ -4,7 +4,8 @@ const state = {
   activeFilter: "all",
   search: "",
   selectedId: skills[0]?.id,
-  activeSlide: 0
+  activeSlide: 0,
+  viewMode: "slides"
 };
 
 const els = {
@@ -23,6 +24,13 @@ const els = {
   detailPalette: document.querySelector("#detailPalette"),
   mainImage: document.querySelector("#mainImage"),
   mainImageButton: document.querySelector("#mainImageButton"),
+  viewerTabs: document.querySelector("#viewerTabs"),
+  galleryTitle: document.querySelector("#galleryTitle"),
+  galleryHint: document.querySelector("#galleryHint"),
+  imageCounter: document.querySelector("#imageCounter"),
+  prevImage: document.querySelector("#prevImage"),
+  nextImage: document.querySelector("#nextImage"),
+  openCurrentImage: document.querySelector("#openCurrentImage"),
   thumbRow: document.querySelector("#thumbRow"),
   compareGrid: document.querySelector("#compareGrid"),
   compareNote: document.querySelector("#compareNote"),
@@ -96,7 +104,10 @@ function renderDetail() {
   const skill = skills.find((item) => item.id === state.selectedId) || skills[0];
   if (!skill) return;
 
-  const activeImage = skill.slides[state.activeSlide] || skill.slides[0];
+  const referenceLabel = skill.referenceLabel || "参照トーン";
+  const generatedLabel = skill.generatedLabel || "生成結果";
+  const gallery = galleryItems(skill);
+  const activeItem = gallery.items[gallery.index] || gallery.items[0];
   els.detailSkill.textContent = skill.skill;
   els.detailTitle.textContent = skill.label;
   els.detailTone.textContent = skill.tone;
@@ -104,22 +115,30 @@ function renderDetail() {
   els.detailFeatures.textContent = skill.features;
   els.detailTags.innerHTML = skill.tags.map((tag) => `<span class="tag">${tag}</span>`).join("");
   els.detailPalette.innerHTML = skill.colors.map((color) => `<span style="background:${color}" title="${color}"></span>`).join("");
-  els.mainImage.src = activeImage;
-  els.mainImage.alt = `${skill.label} 生成スライド ${state.activeSlide + 1}`;
-  els.mainImageButton.dataset.openImage = activeImage;
-  els.mainImageButton.dataset.openTitle = `${skill.label} / slide ${state.activeSlide + 1}`;
+  els.mainImage.src = activeItem.src;
+  els.mainImage.alt = activeItem.title;
+  els.mainImageButton.dataset.openImage = activeItem.src;
+  els.mainImageButton.dataset.openTitle = activeItem.title;
+  els.openCurrentImage.dataset.openImage = activeItem.src;
+  els.openCurrentImage.dataset.openTitle = activeItem.title;
+  els.galleryTitle.textContent = activeItem.title;
+  els.galleryHint.textContent = gallery.hint;
+  els.imageCounter.textContent = `${gallery.index + 1} / ${gallery.items.length}`;
+  els.prevImage.disabled = gallery.items.length < 2;
+  els.nextImage.disabled = gallery.items.length < 2;
+  els.viewerTabs.querySelectorAll("[data-view-mode]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.viewMode === state.viewMode);
+  });
 
-  els.thumbRow.innerHTML = skill.slides.map((src, index) => {
-    const active = index === state.activeSlide ? " is-active" : "";
+  els.thumbRow.innerHTML = gallery.items.map((item, index) => {
+    const active = index === gallery.index ? " is-active" : "";
     return `
-      <button class="${active}" type="button" data-slide-index="${index}" aria-label="${skill.label} ${index + 1}枚目">
-        <img src="${src}" alt="">
+      <button class="${active}" type="button" data-image-index="${index}" aria-label="${item.title}">
+        <img src="${item.src}" alt="">
       </button>
     `;
   }).join("");
 
-  const referenceLabel = skill.referenceLabel || "参照トーン";
-  const generatedLabel = skill.generatedLabel || "生成結果";
   els.compareNote.textContent = skill.compareNote || `左が${referenceLabel}、右が${generatedLabel}`;
   els.compareGrid.innerHTML = `
     <article class="compare-card">
@@ -135,6 +154,64 @@ function renderDetail() {
       </button>
     </article>
   `;
+}
+
+function galleryItems(skill) {
+  const referenceLabel = skill.referenceLabel || "参照トーン";
+  const generatedLabel = skill.generatedLabel || "生成結果";
+
+  if (state.viewMode === "reference") {
+    return {
+      index: 0,
+      hint: "参照トーンを大きく表示",
+      items: [
+        {
+          src: skill.reference,
+          title: `${skill.label} / ${referenceLabel}`
+        }
+      ]
+    };
+  }
+
+  if (state.viewMode === "generated") {
+    return {
+      index: 0,
+      hint: "生成結果の一覧を大きく表示",
+      items: [
+        {
+          src: skill.generated,
+          title: `${skill.label} / ${generatedLabel}`
+        }
+      ]
+    };
+  }
+
+  const items = skill.slides.map((src, index) => ({
+    src,
+    title: `${skill.label} / 生成スライド ${index + 1}`
+  }));
+  const index = Math.min(state.activeSlide, Math.max(items.length - 1, 0));
+  return {
+    index,
+    hint: "1枚ずつプレビュー",
+    items
+  };
+}
+
+function setGalleryIndex(nextIndex) {
+  const skill = skills.find((item) => item.id === state.selectedId) || skills[0];
+  if (!skill) return;
+
+  const gallery = galleryItems(skill);
+  if (!gallery.items.length) return;
+  const lastIndex = gallery.items.length - 1;
+  const normalized = ((nextIndex % gallery.items.length) + gallery.items.length) % gallery.items.length;
+
+  if (state.viewMode === "slides") {
+    state.activeSlide = Math.min(normalized, lastIndex);
+  }
+
+  renderDetail();
 }
 
 function render() {
@@ -176,10 +253,27 @@ els.skillList.addEventListener("click", (event) => {
 });
 
 els.thumbRow.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-slide-index]");
+  const button = event.target.closest("[data-image-index]");
   if (!button) return;
-  state.activeSlide = Number(button.dataset.slideIndex);
+  if (state.viewMode === "slides") {
+    state.activeSlide = Number(button.dataset.imageIndex);
+  }
   renderDetail();
+});
+
+els.viewerTabs.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-view-mode]");
+  if (!button) return;
+  state.viewMode = button.dataset.viewMode;
+  renderDetail();
+});
+
+els.prevImage.addEventListener("click", () => {
+  setGalleryIndex(state.activeSlide - 1);
+});
+
+els.nextImage.addEventListener("click", () => {
+  setGalleryIndex(state.activeSlide + 1);
 });
 
 document.body.addEventListener("click", (event) => {
